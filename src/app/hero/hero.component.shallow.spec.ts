@@ -1,6 +1,7 @@
 import { TestBed, ComponentFixture } from "@angular/core/testing";
 import { HeroComponent } from "./hero.component";
-import { NO_ERRORS_SCHEMA } from "@angular/core";
+import { NO_ERRORS_SCHEMA, DebugElement, Component } from "@angular/core";
+import { By } from "@angular/platform-browser";
 
 describe("Hero Component (shallow test)", () => {
   let fixture: ComponentFixture<HeroComponent>;
@@ -63,5 +64,19 @@ describe("Hero Component (shallow test)", () => {
     expect(fixture.nativeElement.querySelector("a").textContent).toContain(
       "SuperDude"
     );
+  });
+
+  /* NativeElement vs DebugElement
+    Just like ComponetFixture is wrapper around Component.
+    DebugElement is wrapper around actual DOM Node/element. It has three mehtods
+    -query, queryAll, queryNodes */
+  it("should render hero name in the anchor tag, using Debug Element", () => {
+    fixture.componentInstance.hero = { id: 1, name: "SuperDude", strength: 8 };
+    fixture.detectChanges(); // detects changes and updates bindings if any.
+
+    // import { By } from "@angular/platform-browser";
+    let de = fixture.debugElement.query(By.css("a"));
+
+    expect(de.nativeElement.textContent).toContain("SuperDude");
   });
 });
