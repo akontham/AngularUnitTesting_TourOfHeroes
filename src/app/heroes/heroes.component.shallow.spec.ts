@@ -79,7 +79,7 @@ describe("Heroes Componet (complex shallow test)", () => {
       declarations: [HeroesComponent, FakeHeroComponent],
       providers: [{ provide: HeroService, useValue: mockHeroService }],
       // import { NO_ERRORS_SCHEMA } from "@angular/core";
-      schemas: [NO_ERRORS_SCHEMA],
+      // schemas: [NO_ERRORS_SCHEMA],
     });
 
     fixture = TestBed.createComponent(HeroesComponent);
