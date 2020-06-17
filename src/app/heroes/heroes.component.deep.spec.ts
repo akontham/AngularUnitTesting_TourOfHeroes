@@ -1,4 +1,9 @@
+
 /* Deep Integration Test with a Live component */
+
+/*
+  Create a stub directive for RouterLink  
+*/
 
 import {
   ComponentFixture,
@@ -7,12 +12,26 @@ import {
   fakeAsync,
 } from "@angular/core/testing";
 import { HeroesComponent } from "./heroes.component";
-import { NO_ERRORS_SCHEMA, Component, Input } from "@angular/core";
+import { NO_ERRORS_SCHEMA, Component, Input, Directive } from "@angular/core";
 import { HeroService } from "../hero.service";
 import { of } from "rxjs";
 import { Hero } from "../hero";
 import { By } from "@angular/platform-browser";
 import { HeroComponent } from "../hero/hero.component";
+
+@Directive({
+  selector: '[routerLink]',
+  host: { '(click)': 'onClick()' }
+})
+export class RouterLinkDirectiveStub {
+  @Input('routerLink') linkParams: any;
+  navigatedTo: any = null;
+
+  onClick() {
+    this.navigatedTo = this.linkParams;
+  }
+  
+}
 
 describe("Heroes Componet (deep test)", () => {
   let fixture: ComponentFixture<HeroesComponent>;
@@ -33,9 +52,9 @@ describe("Heroes Componet (deep test)", () => {
     ]);
 
     TestBed.configureTestingModule({
-      declarations: [HeroesComponent, HeroComponent],
+      declarations: [HeroesComponent, HeroComponent, RouterLinkDirectiveStub],
       providers: [{ provide: HeroService, useValue: mockHeroService }],
-      schemas: [NO_ERRORS_SCHEMA], // add this to resolve the ERROR: Template parse errors: Can't bind to 'routerLink' since it isn't a known property of 'a'. ("<a [ERROR ->]routerLink="/detail/{{hero.id}}">
+      // schemas: [NO_ERRORS_SCHEMA], // add this to resolve the ERROR: Template parse errors: Can't bind to 'routerLink' since it isn't a known property of 'a'. ("<a [ERROR ->]routerLink="/detail/{{hero.id}}">
     });
 
     fixture = TestBed.createComponent(HeroesComponent); // creates all the children components but are not initalized yet because we didn't call detectChanges() yet.
@@ -138,4 +157,19 @@ describe("Heroes Componet (deep test)", () => {
     expect(mockHeroService.addHero).toHaveBeenCalled();
     expect(heroText).toContain(name);
   });
+
+  it('should have correct route to the first hero', () => {
+    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    fixture.detectChanges();
+
+    const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
+    let routerLink = heroComponents[0]
+                      .query(By.directive(RouterLinkDirectiveStub))
+                      .injector.get(RouterLinkDirectiveStub);
+
+    heroComponents[0].query(By.css('a')).triggerEventHandler('click', null);
+
+    expect(routerLink.navigatedTo).toBe('/detail/1');
+
+  })
 });
